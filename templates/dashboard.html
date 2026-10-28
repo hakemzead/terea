@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - إدارة المنصة</title>
+    <style>
+        body { font-family: Tahoma, sans-serif; background-color: #141414; color: #fff; margin: 0; padding: 40px 20px; }
+        .container { max-width: 700px; margin: 0 auto; background: #1f1f1f; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border: 1px solid #333; margin-bottom: 30px; }
+        h1, h2 { color: #e50914; text-align: center; margin-bottom: 25px; }
+        
+        .form-group { margin-bottom: 20px; text-align: right; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #ccc; }
+        input, select, textarea { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #444; background-color: #222; color: #fff; font-size: 14px; box-sizing: border-box; outline: none; transition: 0.3s; }
+        input:focus, select:focus, textarea:focus { border-color: #e50914; box-shadow: 0 0 8px rgba(229,9,20,0.3); }
+        textarea { resize: vertical; height: 80px; }
+
+        .submit-btn { background-color: #e50914; color: white; border: none; padding: 14px; width: 100%; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .submit-btn:hover { background-color: #b20710; }
+
+        .show-card { background: #2a2a2a; padding: 15px; border-radius: 6px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .delete-btn { background-color: #d9534f; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .delete-btn:hover { background-color: #c9302c; }
+
+        .back-link { display: block; text-align: center; margin-top: 20px; color: #aaa; text-decoration: none; }
+        .back-link:hover { color: #fff; }
+    </style>
+</head>
+<body>
+
+    <!-- 1. نموذج إضافة مسلسل جديد -->
+    <div class="container">
+        <h1>إضافة مسلسل جديد 🎬</h1>
+        <form action="/add-show" method="POST">
+            <div class="form-group">
+                <label>معرف العمل (ID بالإنجليزية بدون فراغات، مثل: `dirilis`):</label>
+                <input type="text" name="show_id" required placeholder="معرف فريد">
+            </div>
+            <div class="form-group">
+                <label>عنوان العمل:</label>
+                <input type="text" name="title" required placeholder="مثال: قيامة عثمان">
+            </div>
+            <div class="form-group">
+                <label>القسم:</label>
+                <select name="category">
+                    <option value="series">مسلسل</option>
+                    <option value="movies">فيلم</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>رابط البوستر (Image URL):</label>
+                <input type="url" name="image" required placeholder="https://...">
+            </div>
+            <div class="form-group">
+                <label>نبذة عن العمل:</label>
+                <textarea name="description" placeholder="القصة..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>رقم الحلقة الأولى:</label>
+                <input type="text" name="episode_number" required value="1">
+            </div>
+            <div class="form-group">
+                <label>رابط السيرفر:</label>
+                <input type="url" name="server_url" required placeholder="رابط العرض الخارجي...">
+            </div>
+            <button type="submit" class="submit-btn">إضافة المسلسل 🚀</button>
+        </form>
+    </div>
+
+    <!-- 2. نموذج إضافة حلقة جديدة لمسلسل موجود مسبقاً -->
+    <div class="container">
+        <h2>إضافة حلقة جديدة لمسلسل موجود ➕</h2>
+        <form action="/add-episode" method="POST">
+            <div class="form-group">
+                <label>معرف المسلسل (Show ID تماماً كما كتبته عند إنشائه):</label>
+                <input type="text" name="show_id" required placeholder="مثال: dirilis">
+            </div>
+            <div class="form-group">
+                <label>رقم الحلقة الجديدة (مثلاً: 2، 3، 18):</label>
+                <input type="text" name="episode_number" required placeholder="2">
+            </div>
+            <div class="form-group">
+                <label>رابط السيرفر للحلقة الجديدة:</label>
+                <input type="url" name="server_url" required placeholder="رابط السيرفر...">
+            </div>
+            <button type="submit" class="submit-btn" style="background-color: #02b875;">إضافة الحلقة للمسلسل 📥</button>
+        </form>
+    </div>
+
+    <!-- 3. قائمة إدارة وحذف المسلسلات -->
+    <div class="container">
+        <h2>إدارة المسلسلات الحالية 🗑️</h2>
+        {% for s_id, show in shows.items() %}
+            <div class="show-card">
+                <div>
+                    <strong>{{ show.title }}</strong> <span style="color: #aaa; font-size: 12px;">(ID: {{ s_id }})</span>
+                </div>
+                <form action="/delete-show/{{ s_id }}" method="POST" onsubmit="return confirm('هل أنت متأكد من حذف هذا المسلسل نهائياً؟');">
+                    <button type="submit" class="delete-btn">حذف العمل</button>
+                </form>
+            </div>
+        {% else %}
+            <p style="text-align: center; color: #777;">لا توجد مسلسلات مضافة حالياً.</p>
+        {% endfor %}
+
+        <a href="/" class="back-link">← العودة إلى الموقع الرئيسي</a>
+    </div>
+
+</body>
+</html>

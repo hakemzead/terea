@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ show.title }}</title>
+    <style>
+        body { font-family: Tahoma, sans-serif; background-color: #141414; color: #fff; text-align: center; margin: 0; padding: 40px 20px; }
+        h1 { color: #e50914; margin-bottom: 10px; }
+        .description { color: #aaa; max-width: 600px; margin: 0 auto 30px auto; line-height: 1.6; }
+        .episode-list { list-style: none; padding: 0; max-width: 500px; margin: 0 auto; }
+        .episode-item { margin: 15px 0; }
+        .episode-btn { background-color: #222; color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: bold; display: block; border: 1px solid #333; transition: 0.3s; }
+        .episode-btn:hover { background-color: #e50914; border-color: #e50914; }
+        .back-btn { display: inline-block; margin-top: 30px; color: #aaa; text-decoration: none; }
+        .back-btn:hover { color: #fff; }
+    </style>
+</head>
+<body>
+
+    <h1>{{ show.title }}</h1>
+    <p class="description">{{ show.description }}</p>
+    
+    <h2>قائمة الحلقات</h2>
+    <ul class="episode-list">
+        {% for id, ep in show.episodes.items() %}
+            <li class="episode-item">
+                <a href="/watch/{{ id }}" class="episode-btn">{{ ep.title }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <br>
+    <a href="/" class="back-btn">← العودة إلى الرئيسية</a>
+
+</body>
+</html>
