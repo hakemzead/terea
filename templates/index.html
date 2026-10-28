@@ -8,38 +8,65 @@
         body { font-family: Tahoma, sans-serif; background-color: #141414; color: #fff; margin: 0; padding: 0; }
         
         /* شريط علوي شبيه بمواقع البث */
-        .header-bar { background-color: #1f1f1f; padding: 20px; text-align: center; border-bottom: 3px solid #e50914; }
-        h1 { color: #e50914; margin: 0 0 10px 0; font-size: 28px; }
+        .header-bar { background-color: #1f1f1f; padding: 15px 10px; text-align: center; border-bottom: 3px solid #e50914; }
+        h1 { color: #e50914; margin: 0 0 5px 0; font-size: 26px; }
         
-        /* أزرار الأقسام */
-        .categories { margin: 15px 0; }
-        .cat-btn { background-color: #333; color: #fff; border: none; padding: 8px 18px; margin: 0 4px; border-radius: 20px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        /* أزرار الأقسام - محسنة للموبايل */
+        .categories { 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap: 8px; 
+            margin: 12px 0; 
+            padding: 0 5px;
+        }
+        .cat-btn { 
+            background-color: #333; 
+            color: #fff; 
+            border: none; 
+            padding: 8px 14px; 
+            border-radius: 20px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 13px;
+            transition: 0.3s; 
+            white-space: nowrap;
+        }
         .cat-btn:hover, .cat-btn.active { background-color: #e50914; }
 
         /* صندوق البحث */
-        .search-container { margin: 15px 0; }
-        .search-input { width: 100%; max-width: 350px; padding: 10px 20px; font-size: 14px; border-radius: 20px; border: 1px solid #444; background-color: #222; color: #fff; outline: none; }
+        .search-container { margin: 12px 0 5px 0; padding: 0 10px; }
+        .search-input { width: 100%; max-width: 350px; padding: 10px 16px; font-size: 14px; border-radius: 20px; border: 1px solid #444; background-color: #222; color: #fff; outline: none; box-sizing: border-box; }
         .search-input:focus { border-color: #e50914; }
 
         /* شبكة عرض البوسترات (Grid) */
-        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
         
+        @media (min-width: 768px) {
+            .grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+            .header-bar { padding: 20px; }
+        }
+
         /* تصميم البطاقة الواحدة */
         .card { background-color: #1f1f1f; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.5); transition: 0.3s; text-decoration: none; color: #fff; display: flex; flex-direction: column; }
         .card:hover { transform: translateY(-8px); box-shadow: 0 8px 20px rgba(229,9,20,0.4); }
         
-        .card-img { width: 100%; height: 280px; object-fit: cover; }
-        .card-body { padding: 15px; text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
-        .card-title { font-size: 16px; font-weight: bold; margin: 0 0 10px 0; color: #fff; }
-        .card-tag { font-size: 12px; color: #e50914; background: rgba(229,9,20,0.1); padding: 4px 8px; border-radius: 4px; display: inline-block; align-self: center; }
+        .card-img { width: 100%; height: 220px; object-fit: cover; }
+        @media (min-width: 768px) {
+            .card-img { height: 280px; }
+        }
+
+        .card-body { padding: 12px; text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .card-title { font-size: 15px; font-weight: bold; margin: 0 0 8px 0; color: #fff; }
+        .card-tag { font-size: 11px; color: #e50914; background: rgba(229,9,20,0.1); padding: 4px 8px; border-radius: 4px; display: inline-block; align-self: center; }
     </style>
 </head>
 <body>
 
     <div class="header-bar">
         <h1>Terea</h1>
-        <p style="color: #aaa; margin: 0 0 15px 0;">اختر القسم أو ابحث عن العمل المفضّل لديك:</p>
+        <p style="color: #aaa; margin: 0 0 10px 0; font-size: 13px;">اختر القسم أو ابحث عن العمل المفضّل لديك:</p>
         
         <!-- أزرار الأقسام -->
         <div class="categories">
