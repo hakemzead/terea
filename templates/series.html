@@ -25,7 +25,8 @@
     <ul class="episode-list">
         {% for id, ep in show.episodes.items() %}
             <li class="episode-item">
-                <a href="/watch/{{ id }}" class="episode-btn">{{ ep.title }}</a>
+                <!-- تم إضافة series_id هنا لكي يتطابق مع مسار FastAPI -->
+                <a href="/watch/{{ series_id }}/{{ id }}" class="episode-btn">{{ ep.title }}</a>
             </li>
         {% endfor %}
     </ul>
