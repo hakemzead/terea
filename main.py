@@ -8,7 +8,7 @@ app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
 # رابط الاتصال بقاعدة بيانات Supabase الخاصة بك
-DATABASE_URL = "postgresql://postgres:HHhakem2000%40@db.xhhkpnwagcpmjgdhxsku.supabase.co:5432/postgres"
+DATABASE_URL = "postgresql://postgres.xhhkpnwagcpmjgdhxsku:HHhakem2000%40@aws-0-eu-west-1.pooler.supabase.com:6543/postgres"
 
 def get_db_connection():
     return psycopg2.connect(DATABASE_URL)
