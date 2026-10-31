@@ -1,18 +1,20 @@
 from fastapi import FastAPI, Request, HTTPException, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
-import sqlite3
-import os
+import psycopg2
+import json
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-# اسم ملف قاعدة البيانات المحلي
-DB_FILE = "database.db"
+# رابط الاتصال بقاعدة بيانات Supabase الخاصة بك
+DATABASE_URL = "postgresql://postgres:HHhakem2000%40@db.xhhkpnwagcpmjgdhxsku.supabase.co:5432/postgres"
+
+def get_db_connection():
+    return psycopg2.connect(DATABASE_URL)
 
 def init_db():
-    """إنشاء جدول قاعدة البيانات إذا لم يكن موجوداً"""
-    conn = sqlite3.connect(DB_FILE)
+    conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS shows (
@@ -21,23 +23,22 @@ def init_db():
             category TEXT,
             image TEXT,
             description TEXT,
-            episodes TEXT  -- سنخزن الحلقات بصيغة JSON داخل نص
+            episodes TEXT
         )
     """)
     conn.commit()
+    cursor.close()
     conn.close()
 
-# تشغيل قاعدة البيانات عند بدء التطبيق
+# تشغيل دالة إنشاء الجدول عند تشغيل السيرفر
 init_db()
 
-import json
-
 def load_data():
-    """قراءة البيانات من قاعدة البيانات وترتيبها بنفس هيكل التطبيق القديم"""
-    conn = sqlite3.connect(DB_FILE)
+    conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT show_id, title, category, image, description, episodes FROM shows")
     rows = cursor.fetchall()
+    cursor.close()
     conn.close()
 
     shows = {}
@@ -53,24 +54,29 @@ def load_data():
     return {"shows": shows}
 
 def save_show_to_db(show_id, title, category, image, description, episodes):
-    """حفظ أو تحديث المسلسل والحلقات في قاعدة البيانات"""
-    conn = sqlite3.connect(DB_FILE)
+    conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        INSERT OR REPLACE INTO shows (show_id, title, category, image, description, episodes)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO shows (show_id, title, category, image, description, episodes)
+        VALUES (%s, %s, %s, %s, %s, %s)
+        ON CONFLICT (show_id) DO UPDATE SET
+            title = EXCLUDED.title,
+            category = EXCLUDED.category,
+            image = EXCLUDED.image,
+            description = EXCLUDED.description,
+            episodes = EXCLUDED.episodes
     """, (show_id, title, category, image, description, json.dumps(episodes, ensure_ascii=False)))
     conn.commit()
+    cursor.close()
     conn.close()
 
 def delete_show_from_db(show_id):
-    """حذف مسلسل من قاعدة البيانات"""
-    conn = sqlite3.connect(DB_FILE)
+    conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM shows WHERE show_id = ?", (show_id,))
+    cursor.execute("DELETE FROM shows WHERE show_id = %s", (show_id,))
     conn.commit()
+    cursor.close()
     conn.close()
-
 
 @app.get("/")
 def home(request: Request):
@@ -106,19 +112,24 @@ def add_show(
     shows = data.get("shows", {})
     
     if show_id in shows:
-        # المسلسل موجود مسبقاً، نضيف الحلقة الجديدة عليه
         episodes = shows[show_id]["episodes"]
-        episodes[episode_number] = {
+        episodes[str(episode_number)] = {
             "title": f"الحلقة {episode_number}",
             "servers": {
                 "سيرفر المشاهدة": server_url
             }
         }
-        save_show_to_db(show_id, shows[show_id]["title"], shows[show_id]["category"], shows[show_id]["image"], shows[show_id]["description"], episodes)
+        save_show_to_db(
+            show_id, 
+            shows[show_id]["title"], 
+            shows[show_id]["category"], 
+            shows[show_id]["image"], 
+            shows[show_id]["description"], 
+            episodes
+        )
     else:
-        # مسلسل جديد كلياً
         episodes = {
-            episode_number: {
+            str(episode_number): {
                 "title": f"الحلقة {episode_number}",
                 "servers": {
                     "سيرفر المشاهدة": server_url
@@ -140,7 +151,7 @@ def add_episode(
     
     if show_id in shows:
         episodes = shows[show_id]["episodes"]
-        episodes[episode_number] = {
+        episodes[str(episode_number)] = {
             "title": f"الحلقة {episode_number}",
             "servers": {
                 "سيرفر المشاهدة": server_url
@@ -173,28 +184,24 @@ def series_details(request: Request, series_id: str):
     return templates.TemplateResponse(
         request=request, 
         name="series.html", 
-        context={"show": show_data}
+        context={"show": show_data, "series_id": series_id}
     )
 
-@app.get("/watch/{episode_id}")
-def watch_video(request: Request, episode_id: str):
+@app.get("/watch/{series_id}/{episode_id}")
+def watch_video(request: Request, series_id: str, episode_id: str):
     data = load_data()
     shows = data.get("shows", {})
     
-    target_episode = None
-    all_episodes = {}
-    found_series_id = None
+    if series_id not in shows:
+        raise HTTPException(status_code=404, detail="المسلسل غير موجود")
     
-    for s_id, show in shows.items():
-        eps = show.get("episodes", {})
-        if episode_id in eps:
-            target_episode = eps[episode_id]
-            all_episodes = eps
-            found_series_id = s_id
-            break
-            
-    if not target_episode:
+    show_data = shows[series_id]
+    all_episodes = show_data.get("episodes", {})
+    
+    if episode_id not in all_episodes:
         raise HTTPException(status_code=404, detail="الحلقة غير موجودة")
+        
+    target_episode = all_episodes[episode_id]
     
     episode_keys = sorted(all_episodes.keys(), key=lambda x: int(x) if x.isdigit() else x)
     current_index = episode_keys.index(episode_id)
@@ -209,6 +216,6 @@ def watch_video(request: Request, episode_id: str):
             "episode": target_episode,
             "prev_id": prev_id,
             "next_id": next_id,
-            "series_id": found_series_id
+            "series_id": series_id
         }
     )
