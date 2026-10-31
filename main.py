@@ -7,7 +7,7 @@ import json
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-# رابط الاتصال بقاعدة بيانات Supabase الخاصة بك
+# رابط الاتصال بقاعدة بيانات Supabase باستخدام Transaction Pooler
 DATABASE_URL = "postgresql://postgres.xhhkpnwagcpmjgdhxsku:HHhakem2000%40@aws-0-eu-west-1.pooler.supabase.com:6543/postgres"
 
 def get_db_connection():
@@ -116,7 +116,7 @@ def add_show(
         episodes[str(episode_number)] = {
             "title": f"الحلقة {episode_number}",
             "servers": {
-                "سيرفر المشاهدة": server_url
+                "سيرفر 1": server_url
             }
         }
         save_show_to_db(
@@ -132,7 +132,7 @@ def add_show(
             str(episode_number): {
                 "title": f"الحلقة {episode_number}",
                 "servers": {
-                    "سيرفر المشاهدة": server_url
+                    "سيرفر 1": server_url
                 }
             }
         }
@@ -154,7 +154,7 @@ def add_episode(
         episodes[str(episode_number)] = {
             "title": f"الحلقة {episode_number}",
             "servers": {
-                "سيرفر المشاهدة": server_url
+                "سيرفر 1": server_url
             }
         }
         save_show_to_db(
